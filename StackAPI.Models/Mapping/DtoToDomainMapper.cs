@@ -14,4 +14,10 @@ public static class DtoToDomainMapper {
       Name = TagName.From(tagDto.Name),
     };
   }
+
+  public static TagsTotal ToTagsTotal(this TagsTotalDto tagsTotalDto) {
+    return new TagsTotal {
+      TotalCount = tagsTotalDto.TotalCount,
+    };
+  }
 }

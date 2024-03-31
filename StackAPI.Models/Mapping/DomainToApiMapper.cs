@@ -14,7 +14,7 @@ public static class DomainToApiMapper {
     };
   }
 
-  public static GetAllTagsResponse ToTagsResponse(this IEnumerable<Tag> tags) {
+  public static GetAllTagsResponse ToGetAllTagsResponse(this IEnumerable<Tag> tags) {
     return new GetAllTagsResponse {
       Tags = tags.Select(x => new TagResponse {
         Id = x.Id.Value,
@@ -24,6 +24,12 @@ public static class DomainToApiMapper {
         Count = x.Count.Value,
         Name = x.Name.Value,
       })
+    };
+  }
+
+  public static GetTagShareResponse ToGetTagShareResponse(this TagShare tagShare) {
+    return new GetTagShareResponse {
+      TagSharePercentage = tagShare.SharePercentage
     };
   }
 }

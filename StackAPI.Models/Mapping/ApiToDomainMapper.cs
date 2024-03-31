@@ -14,4 +14,32 @@ public static class ApiToDomainMapper {
       Name = TagName.From(createTagRequest.Name),
     };
   }
+
+  public static IEnumerable<Tag> ToTag(this IEnumerable<CreateTagRequest> createTagsRequest) {
+    return createTagsRequest.Select(x => new Tag {
+      Id = TagId.From(Guid.NewGuid()),
+      HasSynonyms = x.HasSynonyms,
+      IsModeratorOnly = x.IsModeratorOnly,
+      IsRequired = x.IsRequired,
+      Count = TagCount.From(x.Count),
+      Name = TagName.From(x.Name),
+    });
+  }
+
+  public static TagMeta ToTagMeta(this GetTagSortedRequest getTagSortedRequest) {
+    return new TagMeta {
+      Offset = getTagSortedRequest.Offset,
+      TagOrderBy = TagSortType.From(
+        getTagSortedRequest.SortBy ?? nameof(Tag.Name)
+      ),
+      TagOrderDirection = TagSortDirection.From(
+        getTagSortedRequest.SortDirection ?? OrderDirection.DESC.ToString()
+      ),
+    };
+  }
+
+  public static TagName ToTagName(this GetTagNamedRequest getTagTagNamedRequest) {
+    var tagName = TagName.From(getTagTagNamedRequest.Name);
+    return tagName;
+  }
 }

@@ -33,7 +33,7 @@ public class ValueOf<TValue, TClass> where TClass : ValueOf<TValue, TClass>, new
   }
 
   public override int GetHashCode() {
-    return EqualityComparer<TValue>.Default.GetHashCode(Value);
+    return EqualityComparer<TValue>.Default.GetHashCode(Value!);
   }
 
   public static bool operator ==(ValueOf<TValue, TClass> a, ValueOf<TValue, TClass> b) {

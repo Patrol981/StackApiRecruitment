@@ -1,0 +1,40 @@
+version: '3.9'
+
+networks:
+  backend:
+    name: backend-network
+
+services:
+  api-database:
+    container_name: api-database
+    networks:
+      - backend
+    image: postgres
+    restart: always
+    shm_size: 128mb
+    environment:
+      POSTGRES_USER: patryk
+      POSTGRES_PASSWORD: pmarkowski
+      POSTGRES_DB: tags_db
+    ports:
+      - 5432:5432
+
+  stackapi:
+    container_name: api
+    networks:
+      - backend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      HTTP_PORTS: 5141
+      HTTPS_PORTS: 7031
+      ASPNETCORE_URLS: http://+:5141
+      API_KEY: YOUR_API_KEY_HERE
+      CONNECTION_STRING: Host=api-database;Username=patryk;Password=pmarkowski;Database=tags_db
+    ports:
+      - 7031:7031
+      - 5141:5141
+    depends_on:
+      - api-database

@@ -15,8 +15,13 @@ public class DatabaseInitializer {
       HasSynonyms bool DEFAULT FALSE,
       IsModeratorOnly bool DEFAULT FALSE,
       IsRequired bool DEFAULT FALSE,
-      Count real,
+      Count bigint,
       Name text
     )");
+  }
+
+  public async Task DropAsync() {
+    using var conn = await _connectionFactory.CreateConnectionAsync();
+    await conn.ExecuteAsync(@"DROP TABLE IF EXISTS Tags");
   }
 }
