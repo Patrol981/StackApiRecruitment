@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 
-using StackAPI.Models.Domain;
 using StackAPI.Models.Mapping;
 using StackAPI.Models.Requests;
 using StackAPI.Models.Responses;
@@ -14,13 +13,13 @@ public class TagEndpoints : IEndpoint {
 
     app.MapPost("tags", CreateTag);
     app.MapPost("tags/addMany", CreateManyTags);
-    app.MapGet("tags/{tagRequest}", GetTag);
-    app.MapGet("tags/getByName/{tagRequest}", GetTagByName);
+    app.MapGet("tags/{tagId}", GetTag);
+    app.MapGet("tags/getByName/{tagName}", GetTagByName);
     app.MapGet("tags/{sortBy}/{direction}/{offset}", GetAllTagsSorted);
     app.MapGet("tags", GetAllTagsSorted);
-    app.MapDelete("tags/{tagRequest}", RemoveTag);
+    app.MapDelete("tags/{tagId}", RemoveTag);
     app.MapPost("tags/removeMany", RemoveManyTags);
-    app.MapGet("tags/share/{tagRequest}", GetTagShare);
+    app.MapGet("tags/share/{tagName}", GetTagShare);
   }
 
   public void DefineServices(IServiceCollection services) {
@@ -60,10 +59,10 @@ public class TagEndpoints : IEndpoint {
   }
 
   public static async Task<Results<Ok<TagResponse>, NotFound, ProblemHttpResult>> GetTag(
-    ITagService tagService, GetTagRequest tagRequest
+    ITagService tagService, GetTagRequest tagId
   ) {
     try {
-      var tag = await tagService.GetAsync(tagRequest.Id);
+      var tag = await tagService.GetAsync(tagId.Id);
 
       if (tag == null) {
         return TypedResults.NotFound();
@@ -78,10 +77,10 @@ public class TagEndpoints : IEndpoint {
   }
 
   public static async Task<Results<Ok<TagResponse>, NotFound, ProblemHttpResult>> GetTagByName(
-    ITagService tagService, GetTagNamedRequest tagRequest
+    ITagService tagService, GetTagNamedRequest tagName
   ) {
     try {
-      var tag = await tagService.GetByNameAsync(tagRequest.ToTagName());
+      var tag = await tagService.GetByNameAsync(tagName.ToTagName());
 
       if (tag == null) {
         return TypedResults.NotFound();
@@ -122,19 +121,13 @@ public class TagEndpoints : IEndpoint {
     }
   }
 
-  public static async Task<Ok<GetAllTagsResponse>> GetAllTags(ITagService tagService) {
-    var tags = await tagService.GetAllAsync();
-    var tagsResponse = tags.ToGetAllTagsResponse();
-    return TypedResults.Ok(tagsResponse);
-  }
-
   public static async Task<Results<NoContent, NotFound>> RemoveTag(
-    ITagService tagService, DeleteTagRequest tagRequest
+    ITagService tagService, DeleteTagRequest tagId
   ) {
-    var deleted = await tagService.DeleteAsync(tagRequest.Id);
+    var deleted = await tagService.DeleteAsync(tagId.Id);
 
     return !deleted ? (Results<NoContent, NotFound>)TypedResults.NotFound() :
-      (Results<NoContent, NotFound>)TypedResults.NoContent();
+      TypedResults.NoContent();
   }
 
   public static async Task<Results<NoContent, ProblemHttpResult>> RemoveManyTags(
@@ -145,12 +138,12 @@ public class TagEndpoints : IEndpoint {
     return !deleted ? TypedResults.Problem("Could not remove tags") : TypedResults.NoContent();
   }
 
-  public static async Task<Results<Ok<TagShare>, ProblemHttpResult>> GetTagShare(
-    ITagService tagService, GetTagNamedRequest tagRequest
+  public static async Task<Results<Ok<GetTagShareResponse>, ProblemHttpResult>> GetTagShare(
+    ITagService tagService, GetTagNamedRequest tagName
   ) {
     try {
-      var tagShare = await tagService.GetTagShareAsync(tagRequest.ToTagName());
-      return TypedResults.Ok(tagShare);
+      var tagShare = await tagService.GetTagShareAsync(tagName.ToTagName());
+      return TypedResults.Ok(tagShare.ToGetTagShareResponse());
     } catch (Exception ex) {
       return TypedResults.Problem(ex.Message);
     }

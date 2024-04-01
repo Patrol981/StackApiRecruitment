@@ -1,4 +1,5 @@
 ﻿using StackAPI.Models.Domain;
+using StackAPI.Models.Requests;
 using StackAPI.Models.Responses;
 
 namespace StackAPI.Models.Mapping;
@@ -31,5 +32,13 @@ public static class DomainToApiMapper {
     return new GetTagShareResponse {
       TagSharePercentage = tagShare.SharePercentage
     };
+  }
+
+  public static IEnumerable<DeleteTagRequest> ToDeleteTagRequests(this IEnumerable<Tag> tags) {
+    var deleteRequests = tags.Select(tag => new DeleteTagRequest {
+      Id = tag.Id.Value
+    });
+
+    return deleteRequests;
   }
 }

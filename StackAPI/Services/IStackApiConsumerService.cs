@@ -1,6 +1,4 @@
-﻿using StackAPI.Models.Responses;
-
-namespace StackAPI.Services;
+﻿namespace StackAPI.Services;
 public interface IStackApiConsumerService {
-  Task<GetAllTagsResponse> PopulateDb();
+  Task<bool> PopulateDb();
 }

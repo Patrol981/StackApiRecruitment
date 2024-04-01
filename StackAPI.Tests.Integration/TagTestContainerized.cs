@@ -12,7 +12,9 @@ using Microsoft.Extensions.Hosting;
 
 using StackAPI.Models.Domain;
 using StackAPI.Models.Domain.Common;
+using StackAPI.Models.Mapping;
 using StackAPI.Models.Responses;
+using StackAPI.Repositories;
 using StackAPI.Services;
 using StackAPI.Tests.Integration.Helpers;
 
@@ -130,6 +132,87 @@ public class TagTestContainerized(DatabaseFixture fixture)
 
     // Assert
     result.Count().Should().Be(exampleTags.Length);
+  }
+
+  [Fact]
+  public async void Tag_TagsBeingDeletedProperly_OnDeletgingManyTags() {
+    // Arrange
+    var factory = new WebApplicationFactory<Program>()
+      .WithWebHostBuilder(host => {
+        host.UseSetting(
+          "Database:ConnectionString",
+          fixture.ConnectionString
+        );
+        host.UseEnvironment(Environments.Staging);
+      });
+    var client = factory.CreateClient();
+    var tagService = factory.Services.GetRequiredService<ITagService>();
+
+    var exampleTags = TagNameGenerator.GetTagNames(2000);
+    var tagsFaker = new Faker<Tag>()
+      .RuleFor(x => x.Name, f => TagName.From(f.PickRandom(exampleTags)))
+      .RuleFor(x => x.HasSynonyms, f => f.Random.Bool())
+      .RuleFor(x => x.IsModeratorOnly, f => f.Random.Bool())
+      .RuleFor(x => x.IsRequired, f => f.Random.Bool())
+      .RuleFor(x => x.Count, f => TagCount.From(f.Random.Long(0, 5000)));
+    var tags = tagsFaker.GenerateBetween(1000, 2000).AsEnumerable();
+    await tagService.CreateManyAsync(tags);
+    var tagsToDelete = tags.ToDeleteTagRequests();
+
+    // Act
+    var deleteResposne = await client.PostAsJsonAsync("/tags/removeMany", tagsToDelete);
+    var getAllResponse = await client.GetAsync("/tags");
+
+    // Assert
+    deleteResposne.StatusCode.Should().Be((System.Net.HttpStatusCode)StatusCodes.Status204NoContent);
+
+    var getAllResult = await getAllResponse.Content.ReadFromJsonAsync<GetAllTagsResponse>();
+    getAllResult.Should().NotBeNull();
+    getAllResult!.Tags.Should().NotBeEquivalentTo(tags);
+    getAllResult.TotalRecords.Should().Be(0);
+    getAllResult.TotalPages.Should().Be(0);
+    getAllResult.PageSize.Should().Be(100);
+    getAllResult.CurrentPage.Should().Be(0);
+  }
+
+  [Fact]
+  public async void Tag_TagShareShouldBeAppropriate_OnGetTagShare() {
+    // Arrange
+    var factory = new WebApplicationFactory<Program>()
+      .WithWebHostBuilder(host => {
+        host.UseSetting(
+          "Database:ConnectionString",
+          fixture.ConnectionString
+        );
+        host.UseEnvironment(Environments.Staging);
+      });
+    var client = factory.CreateClient();
+    var tagService = factory.Services.GetRequiredService<ITagService>();
+    var tagRepository = factory.Services.GetRequiredService<ITagRepository>();
+
+    var exampleTags = new[] { "csharp", "cpp", "javascript", "java" };
+    var tagsFaker = new Faker<Tag>()
+      .RuleFor(x => x.Name, f => TagName.From(f.PickRandom(exampleTags)))
+      .RuleFor(x => x.HasSynonyms, f => f.Random.Bool())
+      .RuleFor(x => x.IsModeratorOnly, f => f.Random.Bool())
+      .RuleFor(x => x.IsRequired, f => f.Random.Bool())
+      .RuleFor(x => x.Count, f => TagCount.From(f.Random.Long(100, 5000)));
+    var tags = tagsFaker.GenerateBetween(5, 50).AsEnumerable();
+    await tagService.CreateManyAsync(tags);
+    var targetTag = tags.ToArray()[0];
+    var totalCount = await tagRepository.GetTotalCountAsync();
+
+    // Act
+    var response = await client.GetAsync($"/tags/share/{targetTag.Name}");
+    var result = await response.Content.ReadFromJsonAsync<GetTagShareResponse>();
+
+    // Assert
+    response.StatusCode.Should().Be((System.Net.HttpStatusCode)StatusCodes.Status200OK);
+
+    result.Should().NotBeNull();
+
+    double expectedPercentage = (targetTag.Count.Value / (double)totalCount.TotalCount) * 100;
+    result!.TagSharePercentage.Should().Be((decimal)expectedPercentage);
   }
 
   public Task DisposeAsync() {

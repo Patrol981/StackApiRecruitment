@@ -19,7 +19,7 @@ public class StackApiConsumerService : IStackApiConsumerService {
     _logger = logger;
   }
 
-  public async Task<GetAllTagsResponse> PopulateDb() {
+  public async Task<bool> PopulateDb() {
     _logger.LogInformation("Getting all tags");
     var allTags = await _tagService.GetAllAsync();
 
@@ -48,8 +48,6 @@ public class StackApiConsumerService : IStackApiConsumerService {
     }
 
     _logger.LogInformation("Creating tags based on api response");
-    var isPopulated = await _tagService.CreateManyAsync(itemsToAdd);
-
-    return itemsToAdd.ToGetAllTagsResponse();
+    return await _tagService.CreateManyAsync(itemsToAdd);
   }
 }

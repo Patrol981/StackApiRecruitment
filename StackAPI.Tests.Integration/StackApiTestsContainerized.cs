@@ -1,7 +1,9 @@
 ﻿using FluentAssertions;
 
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.Hosting;
 
 using StackAPI.Tests.Integration.Helpers;
 
@@ -18,6 +20,7 @@ public class StackApiTestsContainerized(DatabaseFixture fixture)
           "Database:ConnectionString",
           fixture.ConnectionString
         );
+        host.UseEnvironment(Environments.Staging);
       });
     var client = factory.CreateClient();
 

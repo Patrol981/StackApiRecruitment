@@ -1,6 +1,69 @@
 @StackAPI_HostAddress = http://localhost:5141
 
-GET {{StackAPI_HostAddress}}/weatherforecast/
+### Get all tags
+GET {{StackAPI_HostAddress}}/tags
 Accept: application/json
 
-###
+### Get tag by Id
+GET {{StackAPI_HostAddress}}/tags/
+Accept: application/json
+
+### Get tag by Name
+GET {{StackAPI_HostAddress}}/tags/getTagByName/
+Accept: application/json
+
+### Remove tag
+DELETE {{StackAPI_HostAddress}}/tags/
+Accept: application/json
+
+### Create tag
+POST {{StackAPI_HostAddress}}/tags
+Content-Type: application/json
+
+{
+  "hasSynonyms": true,
+  "isModeratorOnly": true,
+  "isRequired": true,
+  "count": 0,
+  "name": "string"
+}
+
+### Get tag share
+GET {{StackAPI_HostAddress}}/tags/share/
+Accept: application/json
+
+### Remove many tags
+
+### Create tag
+POST {{StackAPI_HostAddress}}/tags/RemoveMany
+Content-Type: application/json
+
+[
+  {
+    "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+  },
+  {
+    "id": "3fa85f64-5717-4562-b3fc-2c963f77afa7"
+  }
+]
+
+### Create many tags
+POST {{StackAPI_HostAddress}}/tags/addMany 
+Content-Type: application/json
+
+[
+  {
+    "hasSynonyms": true,
+    "isModeratorOnly": true,
+    "isRequired": true,
+    "count": 0,
+    "name": "string"
+  },
+  {
+    "hasSynonyms": true,
+    "isModeratorOnly": true,
+    "isRequired": true,
+    "count": 0,
+    "name": "string2"
+  }
+]
