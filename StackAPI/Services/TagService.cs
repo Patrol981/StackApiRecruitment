@@ -38,10 +38,13 @@ public class TagService : ITagService {
       .Select(group => group.First())
       .ToList();
 
-    var tagsDto = uniqueTags.ToTagDto().ToList();
+    var tagNames = uniqueTags.Select(tag => tag.Name.Value).ToList();
+    var existingTags = (await _tagRepository.GetManyAsync(tagNames)).ToList();
 
-    var existingTags = await _tagRepository.GetManyAsync(tagsDto.Select(tag => tag.Name).ToList());
-    var tagsToCreate = tagsDto.Except(existingTags.ToList()).ToList();
+    var tagsDto = uniqueTags.ToTagDto();
+    var tagsToCreate = tagsDto
+      .Where(tag => !existingTags.Any(existingTag => existingTag.Name == tag.Name))
+      .ToList();
 
     _logger.LogInformation("Creating many tags");
     return await _tagRepository.CreateManyAsync(tagsToCreate);

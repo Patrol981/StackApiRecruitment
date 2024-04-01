@@ -57,13 +57,13 @@ Content-Type: application/json
     "isModeratorOnly": true,
     "isRequired": true,
     "count": 0,
-    "name": "string"
+    "name": "c#"
   },
   {
     "hasSynonyms": true,
     "isModeratorOnly": true,
     "isRequired": true,
     "count": 0,
-    "name": "string2"
+    "name": "c#"
   }
 ]
